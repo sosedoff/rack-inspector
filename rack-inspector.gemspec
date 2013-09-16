@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Rack::Inspector::VERSION
   spec.authors       = ["Dan Sosedoff"]
   spec.email         = ["dan.sosedoff@gmail.com"]
-  spec.description   = %q{Reporter middleware}
-  spec.summary       = %q{Reported middleware}
+  spec.description   = %q{Request inspection rack middleware}
+  spec.summary       = %q{Request inspection rack middleware}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -24,4 +24,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "rack-test"
 end
