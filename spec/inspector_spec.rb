@@ -11,7 +11,7 @@ describe Rack::Inspector do
     end
 
     it "assigns name" do
-      expect(middleware.name).to eq "rack"
+      expect(middleware.name).to eq "rack-inspector"
     end
 
     it "assigns empty routes" do
@@ -106,7 +106,7 @@ describe Rack::Inspector do
     payload = JSON.parse(redis.lpop("reports"))
 
     expect(payload["id"]).to match /^[a-f\d\-]+$/
-    expect(payload["app"]).to eq "rack"
+    expect(payload["app"]).to eq "rack-inspector"
     expect(payload["host"]).not_to be_empty
     expect(payload["request_method"]).to eq "GET"
     expect(payload["path"]).to eq "/hello"
