@@ -13,7 +13,7 @@ module Rack
     def initialize(app, options={})
       @app       = app
       @hostname  = options[:hostname] || `hostname`.strip
-      @name      = options[:name] || ::File.basename(::File.dirname(__FILE__))
+      @name      = options[:name] || ::File.basename(Dir.pwd)
       @match_all = options[:match_all] == true
       @routes    = ([options[:match]] || []).flatten.compact.uniq
       @statuses  = ([options[:status]] || []).flatten.compact.uniq
