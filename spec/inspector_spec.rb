@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Rack::Inspector do
   let(:redis)      { Redis.new }
-  let(:options)    { Hash(redis: redis) }
+  let(:options)    { Hash[redis: redis] }
   let(:middleware) { Rack::Inspector.new(default_app, options) }
 
   describe "#initialize" do
@@ -19,7 +19,7 @@ describe Rack::Inspector do
     end
 
     context "with non-regex routes" do
-      let(:options) { Hash(match: ["a", "b", "c"]) }
+      let(:options) { Hash[match: ["a", "b", "c"]] }
 
       it "raises exception" do
         expect { middleware }.to raise_error ArgumentError, "Non-regular expessions in match"
@@ -27,7 +27,7 @@ describe Rack::Inspector do
     end
 
     context "with duplicate routes" do
-      let(:options) { Hash(match: [/a/, /a/, /b/]) }
+      let(:options) { Hash[match: [/a/, /a/, /b/]] }
 
       it "removes duplicates" do
         expect(middleware.routes.size).to eq 2
@@ -35,7 +35,7 @@ describe Rack::Inspector do
     end
 
     context "with a single route" do
-      let(:options) { Hash(match: /a/) }
+      let(:options) { Hash[match: /a/] }
 
       it "converts it to array" do
         expect(middleware.routes).to be_an Array
