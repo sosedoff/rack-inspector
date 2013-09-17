@@ -19,18 +19,26 @@ describe Rack::Inspector do
     end
 
     context "with non-regex routes" do
-      let(:options) { Hash(routes: ["a", "b", "c"]) }
+      let(:options) { Hash(match: ["a", "b", "c"]) }
 
       it "raises exception" do
-        expect { middleware }.to raise_error ArgumentError, "Non-regular expessions in routes"
+        expect { middleware }.to raise_error ArgumentError, "Non-regular expessions in match"
       end
     end
 
     context "with duplicate routes" do
-      let(:options) { Hash(routes: [/a/, /a/, /b/]) }
+      let(:options) { Hash(match: [/a/, /a/, /b/]) }
 
       it "removes duplicates" do
         expect(middleware.routes.size).to eq 2
+      end
+    end
+
+    context "with a single route" do
+      let(:options) { Hash(match: /a/) }
+
+      it "converts it to array" do
+        expect(middleware.routes).to be_an Array
       end
     end
   end
@@ -43,7 +51,7 @@ describe Rack::Inspector do
   it "reports only on specified routes" do
     expect(redis).to receive(:rpush).once
 
-    middleware = Rack::Inspector.new(default_app, redis: redis, routes: [/hello/])
+    middleware = Rack::Inspector.new(default_app, redis: redis, match: [/hello/])
     middleware.call env_for("http://foobar.com/")
     middleware.call env_for("http://foobar.com/hello")
   end

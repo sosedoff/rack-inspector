@@ -15,13 +15,13 @@ module Rack
       @hostname  = options[:hostname] || `hostname`.strip
       @name      = ::File.basename(::File.dirname(__FILE__))
       @match_all = options[:match_all] == true
-      @routes    = (options[:routes] || []).uniq
+      @routes    = ([options[:match]] || []).flatten.compact.uniq
       @redis     = options[:redis] || Redis.new
       @redis_key = options[:key] || "reports"
 
       @routes.each do |r|
         unless valid_route?(r)
-          raise ArgumentError, "Non-regular expessions in routes"
+          raise ArgumentError, "Non-regular expessions in match"
         end
       end
     end
