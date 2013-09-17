@@ -8,7 +8,7 @@ require "rack/inspector/payload"
 
 module Rack
   class Inspector
-    attr_reader :name, :hostname, :routes
+    attr_reader :name, :hostname, :routes, :statuses
 
     def initialize(app, options={})
       @app       = app
@@ -16,6 +16,7 @@ module Rack
       @name      = ::File.basename(::File.dirname(__FILE__))
       @match_all = options[:match_all] == true
       @routes    = ([options[:match]] || []).flatten.compact.uniq
+      @statuses  = ([options[:status]] || []).flatten.compact.uniq
       @redis     = options[:redis] || Redis.new
       @redis_key = options[:key] || "reports"
 
@@ -32,13 +33,18 @@ module Rack
       # Call application
       status, headers, body = @app.call(env)
 
-      if report?(request)
+      if status_matches?(status) && report?(request)
         payload = build_payload(request, status, headers, body)
         deliver_payload(payload)
       end
 
       # Return original data
       [status, headers, body]
+    end
+
+    def deliver_payload(payload)
+      @redis.rpush(@redis_key, payload.to_json)
+      @redis.publish(@redis_key, payload.to_json)
     end
 
     private
@@ -55,16 +61,15 @@ module Rack
       end
     end
 
+    def status_matches?(code)
+      @statuses.any? ? @statuses.include?(code) : true
+    end
+
     def build_payload(request, status, headers, body)
       Rack::Inspector::Payload.new(
         self,
         request, status, headers, body
       )
-    end
-
-    def deliver_payload(payload)
-      @redis.rpush(@redis_key, payload.to_json)
-      @redis.publish(@redis_key, payload.to_json)
     end
   end
 end

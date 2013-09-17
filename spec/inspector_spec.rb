@@ -44,23 +44,37 @@ describe Rack::Inspector do
   end
 
   it "does not report anything by default" do
-    expect(redis).not_to receive(:rpush)
+    expect(middleware).not_to receive(:deliver_payload)
     middleware.call env_for("http://foobar.com/")
   end
 
   it "reports only on specified routes" do
-    expect(redis).to receive(:rpush).once
-
     middleware = Rack::Inspector.new(default_app, redis: redis, match: [/hello/])
+    expect(middleware).to receive(:deliver_payload).once
+
     middleware.call env_for("http://foobar.com/")
     middleware.call env_for("http://foobar.com/hello")
   end
 
   it "reports on all routes" do
-    expect(redis).to receive(:rpush).twice
-
     middleware = Rack::Inspector.new(default_app, redis: redis, match_all: true)
+    expect(middleware).to receive(:deliver_payload).twice
+
     middleware.call env_for("http://foobar.com/")
+    middleware.call env_for("http://foobar.com/hello")
+  end
+
+  it "reports on matching response code" do
+    middleware = Rack::Inspector.new(error_app, redis: redis, status: 400, match_all: true)
+    expect(middleware).to receive(:deliver_payload).once    
+    
+    middleware.call env_for("http://foobar.com/hello")
+  end
+
+  it "ignores non-specified response code" do
+    middleware = Rack::Inspector.new(default_app, redis: redis, status: 400, match_all: true)
+    expect(middleware).not_to receive(:deliver_payload)
+
     middleware.call env_for("http://foobar.com/hello")
   end
 

@@ -30,8 +30,13 @@ end
 
 def default_app
   lambda do |env|
-    headers = {'Content-Type' => "text/html"}
-    [200, headers, ["OK"]]
+    [200, { "Content-Type" => "text/html" }, ["OK"]]
+  end
+end
+
+def error_app
+  lambda do |env|
+    [400, { "Content-Type" => "text/html" }, ["BAD REQUEST"]]
   end
 end
 
