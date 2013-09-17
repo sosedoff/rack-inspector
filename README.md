@@ -46,10 +46,10 @@ You can configure inspection with options:
 use Rack::Inspector, match_all: true
 
 # Report only specific requests with regular expressions
-use Rack::Inspector, routes: /api/
+use Rack::Inspector, match: /api/
 
 # Report requests for multiple patterns
-use Rack::Inspector, routes: [/api/, /account/]
+use Rack::Inspector, match: [/api/, /account/]
 ```
 
 ## Testing
