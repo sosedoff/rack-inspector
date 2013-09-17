@@ -1,10 +1,23 @@
 # Rack::Inspector
 
-Rack middleware to remotely inspect request and response data for Ruby applications.
-
-It uses [Redis](http://redis.io) as a backend and streams request/response payloads as they happen.
+Rack middleware for remote request/response inspection in real-time.
 
 [![Build Status](https://travis-ci.org/sosedoff/rack-inspector.png?branch=master)](https://travis-ci.org/sosedoff/rack-inspector)
+
+## Overview
+
+This middleware provides a capability to stream request/response data directly
+into [redis](http://redis.io) using pubsub. All request data is also stored in a separate list.
+Its designed to simplify API troubleshooting on staging/test servers. 
+You can hook up anything that supports redis lists or pubsub to monitor activity.
+
+Supports matching by:
+
+- Request path
+- Request method
+- Response code (200, 400, etc)
+
+Check out a simple UI built in node.js for examples: [rack-inspector-ui](https://github.com/sosedoff/rack-inspector-ui)
 
 ## Installation
 
