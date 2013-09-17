@@ -26,10 +26,30 @@ $ gem install rack-reporter
 
 Edit your `config.ru` file:
 
-```
+```ruby
+# Require inspector middleware
 require "rack/inspector"
 
+# Use middleware
 use Rack::Inspector
+
+# Run application
+run MyApp
+```
+
+## Configure
+
+You can configure inspection with options:
+
+```ruby
+# Will report all requests
+use Rack::Inspector, match_all: true
+
+# Report only specific requests with regular expressions
+use Rack::Inspector, routes: /api/
+
+# Report requests for multiple patterns
+use Rack::Inspector, routes: [/api/, /account/]
 ```
 
 ## Testing
