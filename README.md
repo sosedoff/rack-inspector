@@ -70,6 +70,13 @@ use Rack::Inspector, match: [/api/, /account/]
 
 # Report requests for status code
 use Rack::Inspector, match_all: true, status: [400, 401, 404]
+
+# Setup redis connection
+use Rack::Inspector, redis: Redis.new(host: "HOST")
+
+# Or using environment variable
+# export REDIS_INSPECT_URL=redis://user:password@host:port/
+use Rack::Inspector
 ```
 
 ## Payloads
