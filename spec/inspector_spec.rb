@@ -41,6 +41,27 @@ describe Rack::Inspector do
         expect(middleware.routes).to be_an Array
       end
     end
+
+    context "with custom redis url" do
+      before do
+        ENV["REDIS_INSPECT_URL"] = "redis://username@localhost2:6379"
+      end
+
+      after do
+        ENV["REDIS_INSPECT_URL"] = nil
+      end
+
+      let(:middleware) do
+        Rack::Inspector.new(default_app, redis: nil)
+      end
+
+      it "connects to custom redis server" do
+        conn = middleware.instance_variable_get("@redis")
+
+        expect(conn.client.host).to eq "localhost2"
+        expect(conn.client.port).to eq 6379
+      end
+    end
   end
 
   it "does not report anything by default" do

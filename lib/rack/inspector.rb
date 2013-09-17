@@ -17,7 +17,7 @@ module Rack
       @match_all = options[:match_all] == true
       @routes    = ([options[:match]] || []).flatten.compact.uniq
       @statuses  = ([options[:status]] || []).flatten.compact.uniq
-      @redis     = options[:redis] || Redis.new
+      @redis     = options[:redis] || redis_from_url || Redis.new
       @redis_key = options[:key] || "reports"
 
       @routes.each do |r|
@@ -48,6 +48,13 @@ module Rack
     end
 
     private
+
+    def redis_from_url
+      if ENV["REDIS_INSPECT_URL"]
+        uri = URI.parse(ENV["REDIS_INSPECT_URL"])
+        Redis.new(host: uri.host, port: uri.port, password: uri.password)
+      end
+    end
 
     def valid_route?(val)
       val.kind_of?(Regexp)
