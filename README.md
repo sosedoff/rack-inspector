@@ -50,6 +50,9 @@ use Rack::Inspector, match: /api/
 
 # Report requests for multiple patterns
 use Rack::Inspector, match: [/api/, /account/]
+
+# Report requests for status code
+use Rack::Inspector, match_all: true, status: [400, 401, 404]
 ```
 
 ## Testing
