@@ -56,11 +56,14 @@ module Rack
     end
 
     def build_payload(request, status, headers, body)
-      Rack::Inspector::Payload.new(request, status, headers, body)
+      Rack::Inspector::Payload.new(
+        self,
+        request, status, headers, body
+      )
     end
 
     def deliver_payload(payload)
-      @redis.rpush(@redis_key, JSON.dump(payload))
+      @redis.rpush(@redis_key, JSON.dump(payload.to_hash))
     end
   end
 end

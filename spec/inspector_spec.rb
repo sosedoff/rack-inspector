@@ -63,4 +63,19 @@ describe Rack::Inspector do
     middleware.call env_for("http://foobar.com/")
     middleware.call env_for("http://foobar.com/hello")
   end
+
+  it "sends json payload" do
+    middleware = Rack::Inspector.new(default_app, redis: redis, match_all: true)
+    middleware.call env_for("http://foobar.com/hello")
+
+    payload = JSON.parse(redis.lpop("reports"))
+
+    expect(payload["id"]).to match /^[a-f\d\-]+$/
+    expect(payload["app"]).to eq "rack"
+    expect(payload["host"]).not_to be_empty
+    expect(payload["request_method"]).to eq "GET"
+    expect(payload["path"]).to eq "/hello"
+    expect(payload["status"]).to eq 200
+    expect(payload["timestamp"]).not_to be_empty
+  end
 end

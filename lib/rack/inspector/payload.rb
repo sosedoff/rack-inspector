@@ -1,13 +1,13 @@
 module Rack
   class Inspector
     class Payload
-      def initialize(request, status, headers, body)
+      def initialize(middleware, request, status, headers, body)
         @hash = {
           id:             SecureRandom.uuid,
-          app:            @name,
-          host:           @hostname,
+          app:            middleware.name,
+          host:           middleware.hostname,
           request_method: request.request_method,
-          path:           request.env['REQUEST_URI'],
+          path:           request.path_info,
           status:         status,
           timestamp:      Time.now.utc,
 
