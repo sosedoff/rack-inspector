@@ -4,17 +4,26 @@ require "rack"
 require "securerandom"
 
 require "rack/inspector/version"
+require "rack/inspector/payload"
 
 module Rack
   class Inspector
+    attr_reader :name, :hostname, :routes
+
     def initialize(app, options={})
       @app       = app
-      @hostname  = `hostname`.strip
+      @hostname  = options[:hostname] || `hostname`.strip
       @name      = ::File.basename(::File.dirname(__FILE__))
-
       @match_all = options[:match_all] == true
-      @routes    = options[:routes] || []
+      @routes    = (options[:routes] || []).uniq
       @redis     = options[:redis] || Redis.new
+      @redis_key = options[:key] || "reports"
+
+      @routes.each do |r|
+        unless valid_route?(r)
+          raise ArgumentError, "Non-regular expessions in routes"
+        end
+      end
     end
 
     def call(env)
@@ -34,6 +43,10 @@ module Rack
 
     private
 
+    def valid_route?(val)
+      val.kind_of?(Regexp)
+    end
+
     def report?(request)
       if @match_all
         true
@@ -43,44 +56,11 @@ module Rack
     end
 
     def build_payload(request, status, headers, body)
-      {
-        id:             SecureRandom.uuid,
-        app:            @name,
-        host:           @hostname,
-        request_method: request.request_method,
-        path:           request.env['REQUEST_URI'],
-        status:         status,
-        timestamp:      Time.now.utc,
-
-        request: {
-          query_string:   request.query_string,
-          params:         request.params,
-          body:           request.body.read,
-          env:            select_env(request.env)
-        },
-
-        response: {
-          status:  status,
-          headers: headers,
-          body:    response_body(body)
-        }
-      }
-    end
-
-    def response_body(body)
-      if body.respond_to?(:map)
-        body.map(&:to_s).join
-      else
-        body.to_s
-      end
+      Rack::Inspector::Payload.new(request, status, headers, body)
     end
 
     def deliver_payload(payload)
-      @redis.rpush("reports", JSON.dump(payload))
-    end
-
-    def select_env(env)
-      env.select { |_,v| v.kind_of?(String) }
+      @redis.rpush(@redis_key, JSON.dump(payload))
     end
   end
 end
