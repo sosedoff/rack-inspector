@@ -4,6 +4,8 @@ Rack middleware to remotely inspect request and response data for Ruby applicati
 
 It uses [Redis](http://redis.io) as a backend and streams request/response payloads as they happen.
 
+[![Build Status](https://travis-ci.org/sosedoff/rack-inspector.png?branch=master)](https://travis-ci.org/sosedoff/rack-inspector)
+
 ## Installation
 
 Add this line to your application's Gemfile:
