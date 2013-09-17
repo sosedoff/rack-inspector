@@ -23,6 +23,10 @@ module Rack
         }
       end
 
+      def to_json
+        @json ||= JSON.dump(to_hash)
+      end
+
       private
 
       def request_hash

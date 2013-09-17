@@ -63,7 +63,8 @@ module Rack
     end
 
     def deliver_payload(payload)
-      @redis.rpush(@redis_key, JSON.dump(payload.to_hash))
+      @redis.rpush(@redis_key, payload.to_json)
+      @redis.publish(@redis_key, payload.to_json)
     end
   end
 end
