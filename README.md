@@ -37,7 +37,7 @@ use Rack::Inspector
 run MyApp
 ```
 
-## Configure
+## Configuration
 
 You can configure inspection with options:
 
