@@ -2,6 +2,8 @@
 
 Rack middleware to remotely inspect request and response data for Ruby applications.
 
+It uses [Redis](http://redis.io) as a backend and streams request/response payloads as they happen.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -53,6 +55,46 @@ use Rack::Inspector, match: [/api/, /account/]
 
 # Report requests for status code
 use Rack::Inspector, match_all: true, status: [400, 401, 404]
+```
+
+## Payloads
+
+Each payload is a JSON-encoded object and has the following structure:
+
+```json
+{
+  "id": "500b1a1f-da82-4672-b54c-ee22687eabb7",
+  "app": "rack-inspector",
+  "host": "Dan-Sosedoffs-MacBook-Pro.local",
+  "request_method": "GET",
+  "path": "/hello",
+  "status": 200,
+  "timestamp": "2013-09-17 23:35:32 UTC",
+  "request": {
+    "query_string": "",
+    "params": {},
+    "body": "",
+    "env": {
+      "REQUEST_METHOD": "GET",
+      "SERVER_NAME": "foobar.com",
+      "SERVER_PORT": "80",
+      "QUERY_STRING": "",
+      "PATH_INFO": "/hello",
+      "rack.url_scheme": "http",
+      "HTTPS": "off",
+      "SCRIPT_NAME": "",
+      "CONTENT_LENGTH": "0",
+      "rack.request.query_string": ""
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/html"
+    },
+    "body": "OK"
+  }
+}
 ```
 
 ## Testing
