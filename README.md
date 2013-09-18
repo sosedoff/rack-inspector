@@ -78,7 +78,7 @@ use Rack::Inspector, status: [400, 401, 403, 404]
 
 Setup redis connection:
 
-```
+```ruby
 # Provide a different redis client instance
 use Rack::Inspector, redis: Redis.new(host: "HOST")
 
