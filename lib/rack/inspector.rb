@@ -13,18 +13,9 @@ module Rack
     def initialize(app, options={})
       @app       = app
       @hostname  = options[:hostname] || `hostname`.strip
-      @name      = options[:name] || ::File.basename(Dir.pwd)
-      @match_all = options[:match_all] == true
-      @routes    = ([options[:match]] || []).flatten.compact.uniq
-      @statuses  = ([options[:status]] || []).flatten.compact.uniq
-      @redis     = options[:redis] || redis_from_url || Redis.new
-      @redis_key = options[:key] || "reports"
+      @name      = options[:name]     || ::File.basename(Dir.pwd)
 
-      @routes.each do |r|
-        unless valid_route?(r)
-          raise ArgumentError, "Non-regular expessions in match"
-        end
-      end
+      load_options(options)
     end
 
     def call(env)
@@ -48,6 +39,20 @@ module Rack
     end
 
     private
+
+    def load_options(options)
+      @match_all = options[:match_all] == true
+      @routes    = ([options[:match]] || []).flatten.compact.uniq
+      @statuses  = ([options[:status]] || []).flatten.compact.uniq
+      @redis     = options[:redis] || redis_from_url || Redis.new
+      @redis_key = options[:key] || "reports"
+
+      @routes.each do |r|
+        unless valid_route?(r)
+          raise ArgumentError, "Non-regular expessions in match"
+        end
+      end
+    end
 
     def redis_from_url
       if ENV["REDIS_INSPECT_URL"]
