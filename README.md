@@ -3,6 +3,7 @@
 Rack middleware for remote request/response inspection in real-time.
 
 [![Build Status](https://travis-ci.org/sosedoff/rack-inspector.png?branch=master)](https://travis-ci.org/sosedoff/rack-inspector)
+[![Code Climate](https://codeclimate.com/github/sosedoff/rack-inspector.png)](https://codeclimate.com/github/sosedoff/rack-inspector)
 
 ## Overview
 
