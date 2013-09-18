@@ -60,19 +60,26 @@ run MyApp
 You can configure inspection with options:
 
 ```ruby
-# Will report all requests
-use Rack::Inspector, match_all: true
+# Will report all requests by default
+use Rack::Inspector
 
-# Report only specific requests with regular expressions
-use Rack::Inspector, match: /api/
+# Report if path matches
+use Rack::Inspector, path: /api/
+use Rack::Inspector, path: [/api/, /account/]
 
-# Report requests for multiple patterns
-use Rack::Inspector, match: [/api/, /account/]
+# Report if request method matches
+use Rack::Inspector, method: "POST"
+use Rack::Inspector, method: ["POST", "PUT"]
 
-# Report requests for status code
-use Rack::Inspector, match_all: true, status: [400, 401, 404]
+# Report if response status code matches
+use Rack::Inspector, status: 404
+use Rack::Inspector, status: [400, 401, 403, 404]
+```
 
-# Setup redis connection
+Setup redis connection:
+
+```
+# Provide a different redis client instance
 use Rack::Inspector, redis: Redis.new(host: "HOST")
 
 # Or using environment variable
