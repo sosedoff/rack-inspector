@@ -19,15 +19,15 @@ describe Rack::Inspector do
     end
 
     context "with non-regex routes" do
-      let(:options) { Hash[match: ["a", "b", "c"]] }
+      let(:options) { Hash[path: ["a", "b", "c"]] }
 
       it "raises exception" do
-        expect { middleware }.to raise_error ArgumentError, "Non-regular expessions in match"
+        expect { middleware }.to raise_error ArgumentError, "Non-regular expessions in path"
       end
     end
 
     context "with duplicate routes" do
-      let(:options) { Hash[match: [/a/, /a/, /b/]] }
+      let(:options) { Hash[path: [/a/, /a/, /b/]] }
 
       it "removes duplicates" do
         expect(middleware.routes.size).to eq 2
@@ -35,7 +35,7 @@ describe Rack::Inspector do
     end
 
     context "with a single route" do
-      let(:options) { Hash[match: /a/] }
+      let(:options) { Hash[path: /a/] }
 
       it "converts it to array" do
         expect(middleware.routes).to be_an Array
@@ -70,7 +70,7 @@ describe Rack::Inspector do
   end
 
   it "reports on matching path only" do
-    middleware = Rack::Inspector.new(default_app, redis: redis, match: [/hello/])
+    middleware = Rack::Inspector.new(default_app, redis: redis, path: [/hello/])
     expect(middleware).to receive(:deliver_payload).once
 
     middleware.call env_for("http://foobar.com/")
@@ -114,7 +114,7 @@ describe Rack::Inspector do
   end
 
   it "reports if path and method match" do
-    middleware = Rack::Inspector.new(default_app, redis: redis, match: /hello/, method: "POST")
+    middleware = Rack::Inspector.new(default_app, redis: redis, path: /hello/, method: "POST")
     expect(middleware).to receive(:deliver_payload).once
 
     middleware.call env_for("http://foobar.com/hello", method: "POST")
@@ -123,7 +123,7 @@ describe Rack::Inspector do
   end
 
   it "reports if path, method and status match" do
-    middleware = Rack::Inspector.new(error_app, redis: redis, match: /hello/, method: "POST", status: 400)
+    middleware = Rack::Inspector.new(error_app, redis: redis, path: /hello/, method: "POST", status: 400)
     expect(middleware).to receive(:deliver_payload).once
 
     middleware.call env_for("http://foobar.com/hello", method: "POST")

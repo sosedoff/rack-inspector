@@ -41,13 +41,13 @@ module Rack
     private
 
     def load_options(options)
-      @routes    = parse_array_option(options[:match])
+      @routes    = parse_array_option(options[:path])
       @statuses  = parse_array_option(options[:status])
       @methods   = parse_array_option(options[:method])
-      
+
       @routes.each do |r|
         unless valid_route?(r)
-          raise ArgumentError, "Non-regular expessions in match"
+          raise ArgumentError, "Non-regular expessions in path"
         end
       end
 
