@@ -42,16 +42,23 @@ module Rack
 
     def load_options(options)
       @match_all = options[:match_all] == true
-      @routes    = ([options[:match]] || []).flatten.compact.uniq
-      @statuses  = ([options[:status]] || []).flatten.compact.uniq
-      @redis     = options[:redis] || redis_from_url || Redis.new
-      @redis_key = options[:key] || "reports"
+      @routes    = parse_array_option(options[:match])
+      @statuses  = parse_array_option(options[:status])
+      @methods   = parse_array_option(options[:method])
 
       @routes.each do |r|
         unless valid_route?(r)
           raise ArgumentError, "Non-regular expessions in match"
         end
       end
+
+      # Assign Redis options
+      @redis     = options[:redis] || redis_from_url || Redis.new
+      @redis_key = options[:key] || "reports"
+    end
+
+    def parse_array_option(val)
+      [val].flatten.compact.uniq
     end
 
     def redis_from_url
