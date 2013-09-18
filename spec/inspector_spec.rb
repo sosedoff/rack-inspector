@@ -64,12 +64,12 @@ describe Rack::Inspector do
     end
   end
 
-  it "does not report anything by default" do
-    expect(middleware).not_to receive(:deliver_payload)
+  it "reports everything by default" do
+    expect(middleware).to receive(:deliver_payload)
     middleware.call env_for("http://foobar.com/")
   end
 
-  it "reports only on specified routes" do
+  it "reports on matching path only" do
     middleware = Rack::Inspector.new(default_app, redis: redis, match: [/hello/])
     expect(middleware).to receive(:deliver_payload).once
 
@@ -77,30 +77,62 @@ describe Rack::Inspector do
     middleware.call env_for("http://foobar.com/hello")
   end
 
-  it "reports on all routes" do
-    middleware = Rack::Inspector.new(default_app, redis: redis, match_all: true)
-    expect(middleware).to receive(:deliver_payload).twice
-
-    middleware.call env_for("http://foobar.com/")
-    middleware.call env_for("http://foobar.com/hello")
-  end
-
   it "reports on matching response code" do
-    middleware = Rack::Inspector.new(error_app, redis: redis, status: 400, match_all: true)
+    middleware = Rack::Inspector.new(error_app, redis: redis, status: 400)
     expect(middleware).to receive(:deliver_payload).once    
     
     middleware.call env_for("http://foobar.com/hello")
   end
 
-  it "ignores non-specified response code" do
-    middleware = Rack::Inspector.new(default_app, redis: redis, status: 400, match_all: true)
+  it "does not report if status does not match" do
+    middleware = Rack::Inspector.new(default_app, redis: redis, status: 400)
     expect(middleware).not_to receive(:deliver_payload)
 
-    middleware.call env_for("http://foobar.com/hello")
+    status, _, _ = middleware.call env_for("http://foobar.com/hello")
+    expect(status).not_to eq 400
+  end
+
+  it "reports on matching request method" do
+    middleware = Rack::Inspector.new(default_app, redis: redis, method: "POST")
+    expect(middleware).to receive(:deliver_payload).once
+
+    middleware.call env_for("http://foobar.com/hello", method: "GET")
+    middleware.call env_for("http://foobar.com/hello", method: "POST")
+    middleware.call env_for("http://foobar.com/hello", method: "PUT")
+    middleware.call env_for("http://foobar.com/hello", method: "DELETE")
+    middleware.call env_for("http://foobar.com/hello", method: "PATCH")
+  end
+
+  it "does not report if request method does not match" do
+    middleware = Rack::Inspector.new(default_app, redis: redis, method: "GET")
+    expect(middleware).not_to receive(:deliver_payload)
+
+    middleware.call env_for("http://foobar.com/hello", method: "POST")
+    middleware.call env_for("http://foobar.com/hello", method: "PUT")
+    middleware.call env_for("http://foobar.com/hello", method: "DELETE")
+    middleware.call env_for("http://foobar.com/hello", method: "PATCH")
+  end
+
+  it "reports if path and method match" do
+    middleware = Rack::Inspector.new(default_app, redis: redis, match: /hello/, method: "POST")
+    expect(middleware).to receive(:deliver_payload).once
+
+    middleware.call env_for("http://foobar.com/hello", method: "POST")
+    middleware.call env_for("http://foobar.com/hey", method: "POST")
+    middleware.call env_for("http://foobar.com/hey", method: "GET")
+  end
+
+  it "reports if path, method and status match" do
+    middleware = Rack::Inspector.new(error_app, redis: redis, match: /hello/, method: "POST", status: 400)
+    expect(middleware).to receive(:deliver_payload).once
+
+    middleware.call env_for("http://foobar.com/hello", method: "POST")
+    middleware.call env_for("http://foobar.com/hello", method: "GET")
+    middleware.call env_for("http://foobar.com/hey", method: "POST")
   end
 
   it "sends json payload" do
-    middleware = Rack::Inspector.new(default_app, redis: redis, match_all: true)
+    middleware = Rack::Inspector.new(default_app, redis: redis)
     middleware.call env_for("http://foobar.com/hello")
 
     payload = JSON.parse(redis.lpop("reports"))

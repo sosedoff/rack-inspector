@@ -24,7 +24,7 @@ module Rack
       # Call application
       status, headers, body = @app.call(env)
 
-      if status_matches?(status) && report?(request)
+      if report?(request, status)
         payload = build_payload(request, status, headers, body)
         deliver_payload(payload)
       end
@@ -41,11 +41,10 @@ module Rack
     private
 
     def load_options(options)
-      @match_all = options[:match_all] == true
       @routes    = parse_array_option(options[:match])
       @statuses  = parse_array_option(options[:status])
       @methods   = parse_array_option(options[:method])
-
+      
       @routes.each do |r|
         unless valid_route?(r)
           raise ArgumentError, "Non-regular expessions in match"
@@ -72,12 +71,18 @@ module Rack
       val.kind_of?(Regexp)
     end
 
-    def report?(request)
-      if @match_all
-        true
-      else
-        @routes.select { |r| r =~ request.path_info }.size > 0
-      end
+    def report?(request, status)
+      path_matches?(request.path_info) &&
+      method_matches?(request.request_method) &&
+      status_matches?(status)
+    end
+
+    def path_matches?(path)
+      @routes.any? ? @routes.select { |r| r =~ path }.size > 0 : true
+    end
+
+    def method_matches?(method)
+      @methods.any? ? @methods.include?(method) : true
     end
 
     def status_matches?(code)
